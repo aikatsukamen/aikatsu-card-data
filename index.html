@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>aikatsu-card-data リファレンス</title>
+<style>
+:root{
+  --bg:#faf7fb; --fg:#2b2330; --dim:#7b7286; --line:#e3dce8;
+  --panel:#fff; --accent:#d6336c; --accent-bg:#fde7ef;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#191520;--fg:#efe9f2;--dim:#a79db2;--line:#332b3c;--panel:#221c2b;
+        --accent:#ff7aa8;--accent-bg:#3a2230;}
+}
+*{box-sizing:border-box}
+/* ヘッダを固定領域、本文をスクロール領域に分ける。
+   こうすると見出し行の sticky は本文の上端(top:0)でよく、高さの実測が要らない */
+body{margin:0;background:var(--bg);color:var(--fg);height:100vh;
+  display:flex;flex-direction:column;
+  font-family:system-ui,-apple-system,"Hiragino Sans","Noto Sans JP",sans-serif;font-size:14px}
+header{flex:0 0 auto;z-index:10;background:var(--panel);
+  border-bottom:1px solid var(--line);padding:10px 14px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+input,select,button{font:inherit;color:inherit;background:var(--panel);
+  border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+button{cursor:pointer}
+button:hover{border-color:var(--accent)}
+button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.count{color:var(--dim);font-variant-numeric:tabular-nums}
+main{flex:1 1 auto;overflow:auto}
+main>*{max-width:1500px;margin:0 auto;padding:0 14px}
+#view{padding-top:0}
+table{min-width:max-content}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin:8px 0}
+.bar>i{display:block;height:100%;background:var(--accent);width:0;transition:width .2s}
+/* overflow:hidden を付けるとテーブル自身がスクロール基準になり、
+   見出し行の sticky が効かなくなるので付けない */
+table{border-collapse:collapse;width:100%;background:var(--panel);
+  border:1px solid var(--line)}
+th,td{padding:5px 8px;text-align:left;border-bottom:1px solid var(--line);
+  white-space:nowrap;max-width:22em;overflow:hidden;text-overflow:ellipsis}
+th{position:sticky;top:0;background:var(--panel);font-size:12px;
+  color:var(--dim);z-index:2;box-shadow:0 1px 0 var(--line)}
+tbody tr:hover{background:var(--accent-bg)}
+td img{height:52px;border-radius:3px;display:block}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}
+.gallery img{width:100%;border-radius:4px;display:block;background:var(--line)}
+.pager{display:flex;gap:8px;align-items:center;justify-content:center;margin:14px 0}
+.note{color:var(--dim);font-size:12px;margin-top:10px;line-height:1.7}
+code{background:var(--accent-bg);padding:1px 5px;border-radius:4px}
+dialog{border:1px solid var(--line);border-radius:12px;background:var(--panel);
+  color:var(--fg);padding:16px;max-width:760px;width:94vw}
+dialog::backdrop{background:rgba(0,0,0,.5)}
+dialog img{max-width:220px;border-radius:6px;float:left;margin:0 14px 8px 0}
+dl{margin:0;font-size:13px}
+dt{color:var(--dim);font-size:11px;margin-top:6px}
+dd{margin:0}
+</style>
+</head>
+<body>
+<header>
+  <div class="row">
+    <input id="q" type="search" placeholder="カード名・カードID・アイドル・ブランドで検索" size="34">
+    <select id="work"><option value="">全作品</option></select>
+    <select id="ver"><option value="">全ての弾</option></select>
+    <select id="rarity"><option value="">全レアリティ</option></select>
+    <select id="category"><option value="">全カテゴリ</option></select>
+    <select id="brand"><option value="">全ブランド</option></select>
+    <select id="type"><option value="">全タイプ</option></select>
+    <button id="tabTable" class="on">テーブル</button>
+    <button id="tabGallery">画像一覧</button>
+    <span class="count" id="head"></span>
+  </div>
+  <div class="bar"><i id="bar"></i></div>
+</header>
+
+<main>
+  <div id="view"></div>
+  <div class="pager" id="pager"></div>
+  <p class="note">
+    <code>index.json</code> を読み、そこに載っている弾ごとのファイルを全て取得しています。
+    実運用では <code>files[].hash</code> を控えておき、変わったファイルだけ取り直してください。
+    表示順は <code>version_id</code> 順です。作品を1つに絞るとその作品固有の列が出ます。
+  </p>
+</main>
+
+<dialog id="dlg"><div id="dlgBody"></div>
+  <div class="row" style="margin-top:10px"><button id="dlgClose">閉じる</button></div></dialog>
+
+<script>
+// 同じ場所に置かれている想定。ローカルで開いたときは公開先を見る
+const BASE = location.protocol === "file:"
+  ? "https://aikatsukamen.github.io/aikatsu-card-data/"
+  : new URL(".", location.href).href;
+const PER = 200;
+
+// 全作品に共通の列。作品を絞っていないときはこれだけ出す
+const COMMON = ["version_id", "series_title", "card_id", "name", "type", "rarity",
+                "category", "brand", "appeal_point", "idol"];
+// 作品を絞ったときに追加で出す列
+const EXTRA = {
+  "アイカツ！": ["dress_appeal", "effect", "lucky_star", "constellation_ja",
+                 "romance_dream", "boom", "fever", "distribution"],
+  "アイカツスターズ！": ["dress_appeal", "effect", "appeal_point_plus", "full_slots", "note"],
+  "アイカツフレンズ！": ["dress_appeal", "effect", "cosme", "cosme_effect", "full_slots", "note"],
+  "アイカツオンパレード！": ["dress_appeal", "effect", "school", "cosme", "cosme_effect",
+                             "full_slots", "note"],
+  "アイカツプラネット！": ["level", "skill_text", "cond_kind", "cond_target", "cond_op",
+                           "effect_scope", "effect_kind", "effect_op", "effect_value",
+                           "unit_skill", "illustrator", "note", "distribution"],
+  "アイカツ！アンコール": ["dress_appeal", "effect", "description", "work", "is_parallel", "source"],
+};
+const LABEL = {
+  version_id: "弾ID", series_title: "弾", card_id: "カードID", name: "カード名",
+  type: "タイプ", rarity: "レアリティ", category: "カテゴリ", brand: "ブランド",
+  appeal_point: "Ap", appeal_point_plus: "Ap+", idol: "掲載アイドル",
+  dress_appeal: "ドレスアピール", effect: "効果", lucky_star: "ラッキースター",
+  constellation_ja: "星座", romance_dream: "ロマンス・ドリーム", boom: "BOOM",
+  fever: "フィーバー", distribution: "配布", note: "備考", school: "学園",
+  cosme: "コスメ", cosme_effect: "コスメ効果", full_slots: "スロット",
+  level: "レベル", skill_text: "スキル", cond_kind: "条件種別", cond_target: "条件対象",
+  cond_op: "条件", effect_scope: "効果範囲", effect_kind: "効果種別",
+  effect_op: "効果", effect_value: "効果量", unit_skill: "ユニットスキル",
+  illustrator: "イラスト", description: "説明", work: "出典作品",
+  is_parallel: "パラレル", source: "取得元",
+};
+
+const $ = id => document.getElementById(id);
+
+let cards = [], filtered = [], page = 0, mode = "table", verList = [];
+
+// 作品を選んだら、その作品の弾だけを弾の選択肢に出す
+function fillVer() {
+  const w = $("work").value;
+  const list = verList.filter(f => !w || f.work === w);
+  $("ver").innerHTML = `<option value="">全ての弾</option>`;
+  // 作品を絞っていないときは、どの作品の弾か分かるように作品名も出す
+  fillSelect("ver", list.map(f => [f.version_id,
+    w ? `${f.version_id} ${f.series_title}`
+      : `${f.version_id} ${f.work} ${f.series_title}`]));
+}
+
+async function load() {
+  const index = await (await fetch(BASE + "index.json")).json();
+  const files = index.files.filter(f => f.kind === "cards")
+    .sort((a, b) => a.version_id.localeCompare(b.version_id));
+  const workOf = {};
+  index.files.forEach(f => { if (f.version_id) workOf[f.version_id] = f.work; });
+
+  let done = 0;
+  const load1 = async f => {
+    const body = await (await fetch(BASE + f.path)).json();
+    done++;
+    $("bar").style.width = (100 * done / files.length) + "%";
+    $("head").textContent = `読み込み中 ${done} / ${files.length}`;
+    // 作品名はカードに入っていないので弾ファイルの見出しから補う
+    return body.cards.map(c => ({ ...c, _work: body.work || workOf[f.version_id] }));
+  };
+  // 一度に投げすぎないよう小分けにする
+  const out = [];
+  for (let i = 0; i < files.length; i += 8) {
+    const part = await Promise.all(files.slice(i, i + 8).map(load1));
+    part.forEach(a => out.push(...a));
+  }
+  cards = out;
+  $("bar").parentElement.style.display = "none";
+  $("head").textContent = "";
+
+  // 作品の並びも version_id 順。最初の弾の番号で並べる
+  const first = {};
+  for (const f of files) {
+    if (!(f.work in first) || f.version_id < first[f.work]) first[f.work] = f.version_id;
+  }
+  fillSelect("work", Object.keys(first).sort((a, b) => first[a].localeCompare(first[b])));
+  verList = files;
+  fillVer();
+  fillSelect("type", uniq("type"));
+  fillSelect("rarity", uniq("rarity"));
+  fillSelect("category", uniq("category"));
+  fillSelect("brand", uniq("brand"));
+  apply();
+}
+
+const uniq = k => [...new Set(cards.map(c => c[k]).filter(Boolean))].sort();
+
+function fillSelect(id, items) {
+  const el = $(id);
+  for (const it of items) {
+    const [v, t] = Array.isArray(it) ? it : [it, it];
+    el.insertAdjacentHTML("beforeend", `<option value="${esc(v)}">${esc(t)}</option>`);
+  }
+}
+
+const esc = s => String(s ?? "").replace(/[&<>"]/g,
+  c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+function apply() {
+  const q = $("q").value.trim().toLowerCase();
+  const f = { _work: $("work").value, version_id: $("ver").value,
+              type: $("type").value, rarity: $("rarity").value,
+              category: $("category").value, brand: $("brand").value };
+  filtered = cards.filter(c => {
+    for (const [k, v] of Object.entries(f)) if (v && c[k] !== v) return false;
+    if (!q) return true;
+    return ["name", "card_id", "idol", "brand", "dress_appeal", "skill_text", "note"]
+      .some(k => String(c[k] ?? "").toLowerCase().includes(q));
+  });
+  page = 0;
+  render();
+}
+
+function columns() {
+  const w = $("work").value;
+  const cols = COMMON.filter(c => filtered.some(x => x[c] !== undefined));
+  if (w && EXTRA[w]) cols.push(...EXTRA[w].filter(c => filtered.some(x => x[c] !== undefined)));
+  return cols;
+}
+
+function render() {
+  const slice = filtered.slice(page * PER, page * PER + PER);
+  $("view").innerHTML = mode === "table" ? table(slice) : gallery(slice);
+  pager();
+}
+
+function table(rows) {
+  const cols = columns();
+  const head = ["", ...cols].map(c =>
+    `<th>${c ? esc(LABEL[c] || c) : "画像"}</th>`).join("");
+  const body = rows.map((c, i) => `<tr data-i="${page * PER + i}">
+      <td><img loading="lazy" src="${esc(c.image_card || "")}" alt=""></td>
+      ${cols.map(k => `<td title="${esc(c[k] ?? "")}">${esc(fmt(c[k]))}</td>`).join("")}
+    </tr>`).join("");
+  return `<table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
+}
+
+const fmt = v => v === true ? "○" : v === false ? "" : (v ?? "");
+
+function gallery(rows) {
+  return `<div class="gallery">` + rows.map((c, i) =>
+    `<img loading="lazy" data-i="${page * PER + i}" src="${esc(c.image_card || "")}"
+      alt="${esc(c.name || "")}" title="${esc(c.name || "")}">`).join("") + `</div>`;
+}
+
+function pager() {
+  const last = Math.max(0, Math.ceil(filtered.length / PER) - 1);
+  $("pager").innerHTML = last === 0 ? "" :
+    `<button ${page === 0 ? "disabled" : ""} data-p="${page - 1}">← 前</button>
+     <span class="count">${page + 1} / ${last + 1}</span>
+     <button ${page === last ? "disabled" : ""} data-p="${page + 1}">次 →</button>`;
+}
+
+function detail(i) {
+  const c = filtered[i];
+  if (!c) return;
+  $("dlgBody").innerHTML =
+    (c.image_card ? `<img src="${esc(c.image_card)}" alt="">` : "") +
+    (c.image_card_back ? `<img src="${esc(c.image_card_back)}" alt="">` : "") +
+    "<dl>" + Object.entries(c).filter(([k]) => k !== "image_card" && k !== "image_card_back")
+      .map(([k, v]) => `<dt>${esc(LABEL[k] || k.replace(/^_/, ""))}</dt>
+                        <dd>${esc(fmt(v))}</dd>`).join("") + "</dl>";
+  $("dlg").showModal();
+}
+
+["q", "work", "ver", "type", "rarity", "category", "brand"].forEach(id => {
+  $(id).addEventListener(id === "q" ? "input" : "change", apply);
+});
+$("work").addEventListener("change", () => { fillVer(); apply(); });
+$("tabTable").onclick = () => {
+  mode = "table"; $("tabTable").classList.add("on");
+  $("tabGallery").classList.remove("on"); render();
+};
+$("tabGallery").onclick = () => {
+  mode = "gallery"; $("tabGallery").classList.add("on");
+  $("tabTable").classList.remove("on"); render();
+};
+$("pager").onclick = e => {
+  const b = e.target.closest("button[data-p]");
+  if (b) { page = +b.dataset.p; render(); document.querySelector("main").scrollTop = 0; }
+};
+$("view").onclick = e => {
+  const t = e.target.closest("[data-i]");
+  if (t) detail(+t.dataset.i);
+};
+$("dlgClose").onclick = () => $("dlg").close();
+
+load().catch(e => { $("head").textContent = "読み込みに失敗しました: " + e; });
+</script>
+</body>
+</html>
