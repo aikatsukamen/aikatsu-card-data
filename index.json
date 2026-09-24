@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-21T04:55:56+09:00",
+ "generated_at": "2026-09-24T15:57:35+09:00",
  "works": [
   {
    "work": "アイカツオンパレード！",
@@ -789,9 +789,9 @@
    "version_id": "629001",
    "work": "アイカツ！アンコール",
    "series_title": "1弾",
-   "count": 62,
-   "hash": "da22c95e8d5bdd20",
-   "updated_at": "2026-09-21T04:46:13+09:00"
+   "count": 82,
+   "hash": "f7eb575a28f342e2",
+   "updated_at": "2026-09-24T15:57:35+09:00"
   },
   {
    "path": "v/629901.json",
@@ -806,9 +806,9 @@
   {
    "path": "coords.json",
    "kind": "coords",
-   "count": 25,
-   "hash": "a6d9f9af8fb9f309",
-   "updated_at": "2026-09-21T04:46:05+09:00"
+   "count": 30,
+   "hash": "a3a8c3489e4482eb",
+   "updated_at": "2026-09-24T15:57:35+09:00"
   }
  ]
 }

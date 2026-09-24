@@ -1,5 +1,5 @@
 {
- "count": 25,
+ "count": 30,
  "coords": [
   {
    "coord_id": "C-02e4af",
@@ -28,6 +28,14 @@
    "bottoms": "ピンクステージスカート",
    "shoes": "ピンクステージシューズ",
    "source": "back:E1-21 back:E1-22 back:E1-23"
+  },
+  {
+   "coord_id": "C-29fc2f",
+   "tops": "オーロラキスキャミソール",
+   "bottoms": "オーロラキスドレープスカート",
+   "shoes": "オーロラキスバレエシューズ",
+   "accessory": "オーロラキスリボン",
+   "source": "back:E1-01 back:E1-02 back:E1-03 back:E1-04"
   },
   {
    "coord_id": "C-2a92ec",
@@ -84,6 +92,14 @@
    "source": "back:E1-51 back:E1-52 back:EP-002"
   },
   {
+   "coord_id": "C-7f5509",
+   "tops": "サンセットスターウェイトップス",
+   "bottoms": "サンセットスターウェイスカート",
+   "shoes": "サンセットスターウェイシューズ",
+   "accessory": "サンセットスターウェイカチューシャ",
+   "source": "back:E1-79 back:E1-80 back:E1-81 back:E1-82"
+  },
+  {
    "coord_id": "C-8bea14",
    "tops": "プッチがらシャイニングトップス",
    "bottoms": "ブラックウォッシュデニムミニ",
@@ -91,11 +107,27 @@
    "source": "back:E1-63 back:E1-64 back:E1-67"
   },
   {
+   "coord_id": "C-9024c9",
+   "tops": "天の川コズミックワンショルダー",
+   "bottoms": "天の川コズミックスカート",
+   "shoes": "天の川コズミックブーツ",
+   "accessory": "天の川コズミックカチューシャ",
+   "source": "back:E1-33 back:E1-34 back:E1-35 back:E1-36"
+  },
+  {
    "coord_id": "C-93a947",
    "tops": "ドリーミースタートップス",
    "bottoms": "ドリーミースタースカート",
    "shoes": "ドリーミースターパンプス",
    "source": "back:E1-10 back:E1-11 back:E1-12"
+  },
+  {
+   "coord_id": "C-b2525c",
+   "tops": "サンシャインスターウェイトップス",
+   "bottoms": "サンシャインスターウェイスカート",
+   "shoes": "サンシャインスターウェイシューズ",
+   "accessory": "サンシャインスターウェイカチューシャ",
+   "source": "back:E1-71 back:E1-72 back:E1-73 back:E1-74"
   },
   {
    "coord_id": "C-c152f4",
@@ -171,6 +203,14 @@
    "tops_bottoms": "ピンクステージベスト＆スカート",
    "shoes": "ピンクステージシューズ",
    "source": "back:EP-001"
+  },
+  {
+   "coord_id": "C-fded2a",
+   "tops": "サンライズスターウェイトップス",
+   "bottoms": "サンライズスターウェイスカート",
+   "shoes": "サンライズスターウェイシューズ",
+   "accessory": "サンライズスターウェイカチューシャ",
+   "source": "back:E1-75 back:E1-76 back:E1-77 back:E1-78"
   }
  ]
 }
