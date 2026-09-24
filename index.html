@@ -70,6 +70,13 @@ dd{margin:0}
     <select id="type"><option value="">全タイプ</option></select>
     <button id="tabTable" class="on">テーブル</button>
     <button id="tabGallery">画像一覧</button>
+    <select id="per" title="1ページの表示件数">
+      <option value="50">50件</option>
+      <option value="100">100件</option>
+      <option value="200" selected>200件</option>
+      <option value="500">500件</option>
+      <option value="0">全て</option>
+    </select>
     <span class="count" id="head"></span>
   </div>
   <div class="bar"><i id="bar"></i></div>
@@ -93,7 +100,8 @@ dd{margin:0}
 const BASE = location.protocol === "file:"
   ? "https://aikatsukamen.github.io/aikatsu-card-data/"
   : new URL(".", location.href).href;
-const PER = 200;
+// 1ページの表示件数。0 は全件（1万件を超えるので描画は重くなる）
+let PER = 200;
 
 // 全作品に共通の列。作品を絞っていないときはこれだけ出す
 const COMMON = ["version_id", "series_title", "card_id", "name", "type", "rarity",
@@ -218,7 +226,8 @@ function columns() {
 }
 
 function render() {
-  const slice = filtered.slice(page * PER, page * PER + PER);
+  const per = PER || filtered.length || 1;
+  const slice = filtered.slice(page * per, page * per + per);
   $("view").innerHTML = mode === "table" ? table(slice) : gallery(slice);
   pager();
 }
@@ -243,7 +252,7 @@ function gallery(rows) {
 }
 
 function pager() {
-  const last = Math.max(0, Math.ceil(filtered.length / PER) - 1);
+  const last = PER ? Math.max(0, Math.ceil(filtered.length / PER) - 1) : 0;
   $("pager").innerHTML = last === 0 ? "" :
     `<button ${page === 0 ? "disabled" : ""} data-p="${page - 1}">← 前</button>
      <span class="count">${page + 1} / ${last + 1}</span>
@@ -273,6 +282,12 @@ $("tabTable").onclick = () => {
 $("tabGallery").onclick = () => {
   mode = "gallery"; $("tabGallery").classList.add("on");
   $("tabTable").classList.remove("on"); render();
+};
+$("per").onchange = e => {
+  PER = +e.target.value;
+  page = 0;
+  render();
+  document.querySelector("main").scrollTop = 0;
 };
 $("pager").onclick = e => {
   const b = e.target.closest("button[data-p]");
