@@ -2,7 +2,7 @@
  "version_id": "629901",
  "work": "アイカツ！アンコール",
  "series_title": "プロモーションカード",
- "count": 4,
+ "count": 6,
  "cards": [
   {
    "version_id": "629901",
@@ -81,6 +81,46 @@
    "work": "アイカツ！",
    "is_parallel": false,
    "rarity_code": "R",
+   "source": "cardlist"
+  },
+  {
+   "version_id": "629901",
+   "series_title": "プロモーションカード",
+   "card_id": "EP-037",
+   "name": "エンブレムつきセーラーマリントップス＆スカート",
+   "type": "キュート",
+   "rarity": "ノーマル",
+   "category": "トップス＆ボトムス",
+   "brand": "ノーブランド",
+   "dress_appeal": "トップスウェーブ＆ボトムスチャーム",
+   "appeal_point": 850,
+   "idol": "星宮いちご",
+   "image_card": "https://dcd.aikatsu.com/encore/images/cardlist/card/EP-037_N.webp",
+   "image_card_back": "https://dcd.aikatsu.com/encore/images/cardlist/card/EP-037_N_b.webp",
+   "description": "エンブレムがついたセーラーカラーのトップスとスカート★キュートに元気よく着こなして！",
+   "work": "アイカツ！",
+   "is_parallel": false,
+   "rarity_code": "N",
+   "source": "cardlist"
+  },
+  {
+   "version_id": "629901",
+   "series_title": "プロモーションカード",
+   "card_id": "EP-038",
+   "name": "ブルーワークブーツ",
+   "type": "キュート",
+   "rarity": "ノーマル",
+   "category": "シューズ",
+   "brand": "ノーブランド",
+   "dress_appeal": "ホッピングシューズ",
+   "appeal_point": 400,
+   "idol": "霧矢あおい",
+   "image_card": "https://dcd.aikatsu.com/encore/images/cardlist/card/EP-038_N.webp",
+   "image_card_back": "https://dcd.aikatsu.com/encore/images/cardlist/card/EP-038_N_b.webp",
+   "description": "ごつめのワークブーツは、ハイソックスと合わせてバランスの良いコーデにしてね！",
+   "work": "アイカツ！",
+   "is_parallel": false,
+   "rarity_code": "N",
    "source": "cardlist"
   }
  ]
