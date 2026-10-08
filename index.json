@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-03T12:30:11+09:00",
+ "generated_at": "2026-10-08T22:53:45+09:00",
  "works": [
   {
    "work": "アイカツオンパレード！",
@@ -789,9 +789,9 @@
    "version_id": "629001",
    "work": "アイカツ！アンコール",
    "series_title": "1弾",
-   "count": 85,
-   "hash": "5a82d852d14d6792",
-   "updated_at": "2026-10-03T12:30:11+09:00"
+   "count": 97,
+   "hash": "34ef8c7672e9aa88",
+   "updated_at": "2026-10-08T22:53:45+09:00"
   },
   {
    "path": "v/629901.json",
@@ -799,16 +799,16 @@
    "version_id": "629901",
    "work": "アイカツ！アンコール",
    "series_title": "プロモーションカード",
-   "count": 6,
-   "hash": "1d2fcd31fec6ffd4",
-   "updated_at": "2026-10-03T12:30:11+09:00"
+   "count": 28,
+   "hash": "f797aeaf6e6e3830",
+   "updated_at": "2026-10-08T22:53:45+09:00"
   },
   {
    "path": "coords.json",
    "kind": "coords",
-   "count": 35,
-   "hash": "31584ddb681369a2",
-   "updated_at": "2026-10-03T12:30:11+09:00"
+   "count": 41,
+   "hash": "d35788322c267b35",
+   "updated_at": "2026-10-08T22:53:45+09:00"
   }
  ]
 }
