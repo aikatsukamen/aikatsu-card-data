@@ -68,6 +68,7 @@ dd{margin:0}
     <select id="category"><option value="">全カテゴリ</option></select>
     <select id="brand"><option value="">全ブランド</option></select>
     <select id="type"><option value="">全タイプ</option></select>
+    <select id="idol"><option value="">全アイドル</option></select>
     <button id="tabTable" class="on">テーブル</button>
     <button id="tabGallery">画像一覧</button>
     <select id="per" title="1ページの表示件数">
@@ -187,10 +188,30 @@ async function load() {
   fillSelect("rarity", uniq("rarity"));
   fillSelect("category", uniq("category"));
   fillSelect("brand", uniq("brand"));
+  fillIdol();
   apply();
 }
 
 const uniq = k => [...new Set(cards.map(c => c[k]).filter(Boolean))].sort();
+
+// 掲載アイドルは複数人のとき "," 区切りで入っている。
+// "・" は名前の一部(アリシア・シャーロット)なので区切りに使わない
+const idolsOf = c => String(c.idol ?? "").split(",").map(s => s.trim()).filter(Boolean);
+
+// 作品を選んだら、その作品に出てくるアイドルだけを選択肢に出す。
+// 並びはカードに初めて出てくる順(version_id 順なので作品ごとにまとまる)
+function fillIdol() {
+  const w = $("work").value, cur = $("idol").value;
+  const seen = new Set();
+  for (const c of cards) {
+    if (w && c._work !== w) continue;
+    idolsOf(c).forEach(n => seen.add(n));
+  }
+  $("idol").innerHTML = `<option value="">全アイドル</option>`;
+  fillSelect("idol", [...seen]);
+  // 選んでいたアイドルがこの作品に居なければ「全アイドル」に戻す
+  $("idol").value = seen.has(cur) ? cur : "";
+}
 
 function fillSelect(id, items) {
   const el = $(id);
@@ -205,11 +226,14 @@ const esc = s => String(s ?? "").replace(/[&<>"]/g,
 
 function apply() {
   const q = $("q").value.trim().toLowerCase();
+  const idol = $("idol").value;
   const f = { _work: $("work").value, version_id: $("ver").value,
               type: $("type").value, rarity: $("rarity").value,
               category: $("category").value, brand: $("brand").value };
   filtered = cards.filter(c => {
     for (const [k, v] of Object.entries(f)) if (v && c[k] !== v) return false;
+    // 複数人のカードは、そのうち誰を選んでも出す
+    if (idol && !idolsOf(c).includes(idol)) return false;
     if (!q) return true;
     return ["name", "card_id", "idol", "brand", "dress_appeal", "skill_text", "note"]
       .some(k => String(c[k] ?? "").toLowerCase().includes(q));
@@ -271,10 +295,10 @@ function detail(i) {
   $("dlg").showModal();
 }
 
-["q", "work", "ver", "type", "rarity", "category", "brand"].forEach(id => {
+["q", "work", "ver", "type", "rarity", "category", "brand", "idol"].forEach(id => {
   $(id).addEventListener(id === "q" ? "input" : "change", apply);
 });
-$("work").addEventListener("change", () => { fillVer(); apply(); });
+$("work").addEventListener("change", () => { fillVer(); fillIdol(); apply(); });
 $("tabTable").onclick = () => {
   mode = "table"; $("tabTable").classList.add("on");
   $("tabGallery").classList.remove("on"); render();
@@ -298,6 +322,14 @@ $("view").onclick = e => {
   if (t) detail(+t.dataset.i);
 };
 $("dlgClose").onclick = () => $("dlg").close();
+// 背景(ダイアログの枠の外)をクリックしたら閉じる。
+// 背景のクリックも target は dialog 自身になるので、枠内の余白と区別するため座標で判定する
+$("dlg").addEventListener("click", e => {
+  const r = $("dlg").getBoundingClientRect();
+  if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) {
+    $("dlg").close();
+  }
+});
 
 load().catch(e => { $("head").textContent = "読み込みに失敗しました: " + e; });
 </script>
