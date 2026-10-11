@@ -198,6 +198,9 @@ const uniq = k => [...new Set(cards.map(c => c[k]).filter(Boolean))].sort();
 // "・" は名前の一部(アリシア・シャーロット)なので区切りに使わない
 const idolsOf = c => String(c.idol ?? "").split(",").map(s => s.trim()).filter(Boolean);
 
+// 個人名ではない値。選択肢では末尾に、この順で並べる
+const IDOL_TAIL = ["その他", "-"];
+
 // 作品を選んだら、その作品に出てくるアイドルだけを選択肢に出す。
 // 並びはカードに初めて出てくる順(version_id 順なので作品ごとにまとまる)
 function fillIdol() {
@@ -208,7 +211,8 @@ function fillIdol() {
     idolsOf(c).forEach(n => seen.add(n));
   }
   $("idol").innerHTML = `<option value="">全アイドル</option>`;
-  fillSelect("idol", [...seen]);
+  fillSelect("idol", [...[...seen].filter(n => !IDOL_TAIL.includes(n)),
+                      ...IDOL_TAIL.filter(n => seen.has(n))]);
   // 選んでいたアイドルがこの作品に居なければ「全アイドル」に戻す
   $("idol").value = seen.has(cur) ? cur : "";
 }
